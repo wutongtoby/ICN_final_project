@@ -52,38 +52,23 @@ int main(int argc, char *argv[])
 	}
 	printf("Client connect successfully\n");	
 
-	int i;
 	int bytesRecv, bytesSend;
-	int itemID, itemNumber;
-	int itemcount[3] = {0}; // the shopping list
+	int selection;
     char send_buf[500];
 	char recv_buf[500];
-	char str[100];
+	int message_store_len = 500;
+	//char *message_store = (char *) malloc(sizeof(char) * message_store_len);
+	char message_store[500] = "";
+	int message_count = 0;
+	char temp[5] = "";
     char *menu = "\
 \n\n------------------Menu------------------\n\
-1. Show items\n\
-2. Add new item\n\
-3. Summarize result(item name and price)\n\
-Please enter your operation : \0";
+1. Read all existing messages\n\
+2. Write a new message\n\
+Please type \"1\" or \"2\" to select an option: \0";
 
-	char *itemlist = "\
-\n\n----------------ItemList----------------\n\
-1. Apple    50   dollars\n\
-2. Banana   30   dollars\n\
-3. Cat	    100  dollars\0";
-
-	char *whichitem = "\
-\n\n----------------------------------------\n\
-Which item do you want?\n\
-1. Apple\n\
-2. Banana\n\
-3. Cat\n\
-Please enter your operation : \0";
-
-	char *howmany = "\
-\n\n----------------------------------------\n\
-Quantity?\0";
-
+	//message_store[0] = '\0';
+	//strcat(message_store, "\n\nAll messages:\n");
 	// Send menu to client
 	send_buf[0] = '\0'; // to let it to be recogize as a string
 	// send menu at first 
@@ -100,68 +85,50 @@ Quantity?\0";
 		
 		printf("%s\n", recv_buf);
 
-		if (!strncmp(recv_buf, "1", 1)) { // show the menu
+		if (!strncmp(recv_buf, "1", 1)) { // Read all existing message
 			send_buf[0] = '\0'; // reset
-			strcat(send_buf, itemlist); // send_buf = {{itemlist}}
-			strcat(send_buf, menu);  // send_buf = {{itemlist, menu}}
+			strcat(send_buf, "\n\nAll messages:\n");
+			strcat(send_buf, message_store); 
+			strcat(send_buf, menu);  
 			// send the message back to the client
 			bytesSend = send(clientSocket, send_buf, sizeof(send_buf), 0);
 			if (bytesSend < 0) 
                 printf("Error sending packet\n");
 		}
-		else if (!strncmp(recv_buf, "2", 1)) { // add new item
-			// ask which item does the client want
+		else if (!strncmp(recv_buf, "2", 1)) { // Write a new message
+			// Ask the client to type message
 			send_buf[0] = '\0';
-			strcat(send_buf, whichitem);
+			strcat(send_buf, "Type a new message:");
 			bytesSend = send(clientSocket, send_buf, sizeof(send_buf), 0);
 			if (bytesSend < 0)
                 printf("Error sending packet\n");
 
-			// get the item the client wants
+			// get the the message from the client
 			bytesRecv = recv(clientSocket, recv_buf, sizeof(recv_buf), 0);
 			if (bytesRecv < 0) 
                 printf("Error receiving packet\n");
-			itemID = atoi(recv_buf);
-			printf("%d\n", itemID);
+			/*
+			if (strlen(message_store) + strlen(recv_buf) > message_store_len) {
+				message_store = (char *) realloc(message_store, sizeof(char) * message_store_len * 2);
+				if (message_store == NULL) {
+					printf("Message storage is full\n");
+					exit(0);
+				}
+				message_store_len *= 2;
+			}
+			else {
+				strcat(message_store, recv_buf);
+				strcat(message_store, "\n\n");
+			}
+			*/
+			sprintf(temp, "%d. ", ++message_count);
+			strcat(message_store, temp);
+			strcat(message_store, recv_buf);
+			strcat(message_store, "\n");
 
-			// ask howmany does it want
+			// Tell the client that we haved received the message
 			send_buf[0] = '\0';
-			strcat(send_buf, howmany);
-			bytesSend = send(clientSocket, send_buf, sizeof(send_buf), 0);
-			if (bytesSend < 0) 
-                printf("Error sending packet\n");
-
-			// get howmany does it want
-			bytesRecv = recv(clientSocket, recv_buf, sizeof(recv_buf), 0);
-			if (bytesRecv < 0) 
-                printf("Error receiving packet\n");
-			itemNumber = atoi(recv_buf);
-			printf("%d\n", itemNumber);
-			
-			itemcount[itemID-1] += itemNumber; // add the new quantity into the shopping list	
-
-			// send the menu back to the client
-			send_buf[0] = '\0';
-			strcat(send_buf, menu);
-			bytesSend = send(clientSocket, send_buf, sizeof(send_buf), 0);
-			if (bytesSend < 0) 
-                printf("Error sending packet\n");
-		}
-		else if (!strncmp(recv_buf, "3", 1)) { // summarize result
-			send_buf[0] = '\0';
-			strcat(send_buf, "\n\n----------------------------------------\n\0");
-			sprintf(str, "Apple * %d\n", itemcount[0]);
-			
-			strcat(send_buf, str);
-			sprintf(str, "Banana * %d\n", itemcount[1]);
-			
-			strcat(send_buf, str);
-			sprintf(str, "Cat * %d\n", itemcount[2]);
-			
-			strcat(send_buf, str);
-			sprintf(str, "Total price = %d\n", 50*itemcount[0]+30*itemcount[1]+100*itemcount[2]);
-			
-			strcat(send_buf, str);
+			strcat(send_buf, "New message sent.\n");
 			strcat(send_buf, menu);
 			bytesSend = send(clientSocket, send_buf, sizeof(send_buf), 0);
 			if (bytesSend < 0) 

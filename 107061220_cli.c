@@ -51,7 +51,6 @@ int main(int argc, char *argv[])
 		if (bytesRecv < 0) 
             printf("Error recving packet\n");
 		printf("%s\n", recv_buf);
-
 		fflush(stdin);
 		scanf(" %[^\n]", send_buf); // read word until '\n'
 		
