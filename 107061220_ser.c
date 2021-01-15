@@ -53,11 +53,8 @@ int main(int argc, char *argv[])
 	printf("Client connect successfully\n");	
 
 	int bytesRecv, bytesSend;
-	int selection;
-    char send_buf[500];
-	char recv_buf[500];
-	int message_store_len = 500;
-	//char *message_store = (char *) malloc(sizeof(char) * message_store_len);
+    char send_buf[500] = "";
+	char recv_buf[500] = "";
 	char message_store[500] = "";
 	int message_count = 0;
 	char temp[5] = "";
@@ -67,10 +64,6 @@ int main(int argc, char *argv[])
 2. Write a new message\n\
 Please type \"1\" or \"2\" to select an option: \0";
 
-	//message_store[0] = '\0';
-	//strcat(message_store, "\n\nAll messages:\n");
-	// Send menu to client
-	send_buf[0] = '\0'; // to let it to be recogize as a string
 	// send menu at first 
 	strcat(send_buf, menu);
 	bytesSend = send(clientSocket, send_buf, sizeof(send_buf), 0);
@@ -87,7 +80,7 @@ Please type \"1\" or \"2\" to select an option: \0";
 
 		if (!strncmp(recv_buf, "1", 1)) { // Read all existing message
 			send_buf[0] = '\0'; // reset
-			strcat(send_buf, "\n\nAll messages:\n");
+			strcat(send_buf, "All messages:\n");
 			strcat(send_buf, message_store); 
 			strcat(send_buf, menu);  
 			// send the message back to the client
@@ -107,20 +100,7 @@ Please type \"1\" or \"2\" to select an option: \0";
 			bytesRecv = recv(clientSocket, recv_buf, sizeof(recv_buf), 0);
 			if (bytesRecv < 0) 
                 printf("Error receiving packet\n");
-			/*
-			if (strlen(message_store) + strlen(recv_buf) > message_store_len) {
-				message_store = (char *) realloc(message_store, sizeof(char) * message_store_len * 2);
-				if (message_store == NULL) {
-					printf("Message storage is full\n");
-					exit(0);
-				}
-				message_store_len *= 2;
-			}
-			else {
-				strcat(message_store, recv_buf);
-				strcat(message_store, "\n\n");
-			}
-			*/
+			
 			sprintf(temp, "%d. ", ++message_count);
 			strcat(message_store, temp);
 			strcat(message_store, recv_buf);
