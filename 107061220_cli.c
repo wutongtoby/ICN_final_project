@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 	char send_buf[500];
     char recv_buf[500];	
 
-	while (1) { 
+	while (1) {
 		bytesRecv = recv(serverSocket, recv_buf, sizeof(recv_buf), 0);
 		if (bytesRecv < 0) 
             printf("Error recving packet\n");

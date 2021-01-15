@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 	int bytesRecv, bytesSend;
     char send_buf[500] = "";
 	char recv_buf[500] = "";
-	char message_store[500] = "";
+	char message_store[450] = "";
 	int message_count = 0;
 	char temp[5] = "";
     char *menu = "\
@@ -100,22 +100,27 @@ Please type \"1\" or \"2\" to select an option: \0";
 			bytesRecv = recv(clientSocket, recv_buf, sizeof(recv_buf), 0);
 			if (bytesRecv < 0) 
                 printf("Error receiving packet\n");
-			
-			sprintf(temp, "%d. ", ++message_count);
-			strcat(message_store, temp);
-			strcat(message_store, recv_buf);
-			strcat(message_store, "\n");
 
-			// Tell the client that we haved received the message
-			send_buf[0] = '\0';
-			strcat(send_buf, "New message sent.\n");
+			if (strlen(recv_buf) + strlen(message_store) > 325) {
+				strcpy(send_buf, "The message storage place is not enough to store the string");
+			}
+			else {
+				sprintf(temp, "%d. ", ++message_count);
+				strcat(message_store, temp);
+				strcat(message_store, recv_buf);
+				strcat(message_store, "\n");
+
+				// Tell the client that we haved received the message
+				strcpy(send_buf, "New message sent.\n");
+			}
 			strcat(send_buf, menu);
 			bytesSend = send(clientSocket, send_buf, sizeof(send_buf), 0);
 			if (bytesSend < 0) 
                 printf("Error sending packet\n");
 		}
 		else { // garbage, send the menu again
-			bytesSend = send(clientSocket, menu, strlen(menu), 0);
+			strcpy(send_buf, menu);
+			bytesSend = send(clientSocket, send_buf, sizeof(send_buf), 0);
 			if (bytesSend < 0) 
                 printf("Error sending packet\n");		
 		}	
