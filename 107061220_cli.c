@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
 		bytesRecv = recv(serverSocket, recv_buf, sizeof(recv_buf), 0);
 		if (bytesRecv < 0) 
             printf("Error recving packet\n");
+		system("clear");
 		printf("%s\n", recv_buf);
 		fflush(stdin);
 		scanf(" %[^\n]", send_buf); // read word until '\n'
